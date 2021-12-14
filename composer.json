@@ -1,0 +1,22 @@
+{
+  "name": "marspress/wp-options",
+  "description": "Utility package to create Settings and Theme Mods in WordPress.",
+  "type": "library",
+  "license": "GPL-2.0",
+  "autoload": {
+    "psr-4": {
+      "MarsPress\\Options\\Settings\\": "src/settings",
+      "MarsPress\\Options\\ThemeMods\\": "src/theme_mods"
+    }
+  },
+  "authors": [
+    {
+      "name": "MARSWorks Inc",
+      "email": "wordpress@marsworks.com"
+    }
+  ],
+  "minimum-stability": "dev",
+  "require": {
+    "php": ">=7.4"
+  }
+}

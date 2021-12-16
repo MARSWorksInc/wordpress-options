@@ -25,37 +25,65 @@ if( ! class_exists( 'Option_Group' ) )
 
             $this->key = $_key;
 
-            add_action( 'admin_init', [ $this, 'register_options' ], 10, 0 );
+            add_action( 'admin_init', [ $this, 'register_option_group' ], 10, 0 );
+
+        }
+
+        public function get_key(): string
+        {
+
+            return $this->key;
 
         }
 
         /**
          * @action admin_init
          * @class \MarsPress\Options\Settings\Option_Group
-         * @function register_options
+         * @function register_option_group
          * @priority 10
          * @return void
          */
-        public function register_options()
+        public function register_option_group()
         {
 
-            if( ! isset( $this->options ) ){ return; }
+            \register_setting(
+                $this->key,
+                $this->key,
+                [
+                    'type'                  => 'string',
+                    'description'           => '',
+                    'sanitize_callback'     => [ $this, 'sanitize_options' ],
+                    'show_in_rest'          => true,
+                    'default'               => [],
+                ]
+            );
 
-            foreach ( $this->options as $_option ){
+        }
 
-                \register_setting(
-                    $this->key,
-                    $_option->get_name(),
-                    [
-                        'type'                  => 'string',
-                        'description'           => $_option->get_description(),
-                        'sanitize_callback'     => $_option->get_sanitization_callback(),
-                        'show_in_rest'          => true,
-                        'default'               => $_option->get_default_value(),
-                    ]
-                );
+        public function sanitize_options( $_input )
+        {
+
+            if(
+                isset( $this->options ) &&
+                is_array( $_input )
+            ){
+
+                foreach ( $this->options as $_optionName => $_optionObject ){
+
+                    if(
+                        ! is_null( $sanitizationCallback = $_optionObject->get_sanitization_callback() ) &&
+                        array_key_exists( $_optionName, $_input )
+                    ){
+
+                        $_input[$_optionName] = call_user_func_array( $sanitizationCallback, $_input );
+
+                    }
+
+                }
 
             }
+
+            return $_input;
 
         }
 
@@ -67,6 +95,21 @@ if( ! class_exists( 'Option_Group' ) )
             if( array_key_exists( $_optionName, $this->options ) ){
 
                 return $this->options[$_optionName];
+
+            }
+
+            return null;
+
+        }
+
+        public function get_options(): ?array
+        {
+
+            if( ! isset( $this->options ) ){ return null; }
+
+            if( count( $this->options ) > 0 ){
+
+                return $this->options;
 
             }
 

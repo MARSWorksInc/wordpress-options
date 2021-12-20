@@ -129,7 +129,7 @@ if( ! class_exists( 'Page' ) )
                 $_type === 'email'
             ){
 
-                $input = "<input style='min-width: 250px; pointer-events: all;' type='{$_type}' name='{$_fieldName}' id='{$_fieldName}' value='$_fieldState'>";
+                $input = "<input style='min-width: 350px; pointer-events: all;' type='{$_type}' name='{$_fieldName}' id='{$_fieldName}' value='$_fieldState'>";
 
             }else if(
                 $_type === 'radio' ||
@@ -317,7 +317,7 @@ if( ! class_exists( 'Page' ) )
                 }
 
                 $input = "<img data-control-media='{$_fieldName}' style='pointer-events: none; width: 175px; height: auto; display: block; margin-bottom: {$marginBottom};' class='mp-settings-media-preview' src='{$_fieldState}'/>";
-                $input .= "<input data-control-media='{$_fieldName}' style='min-width: 250px; pointer-events: all;' class='mp-settings-media-input' type='text' id='{$_fieldName}' name='{$_fieldName}' value='{$_fieldState}' />";
+                $input .= "<input data-control-media='{$_fieldName}' style='min-width: 350px; pointer-events: all;' class='mp-settings-media-input' type='text' id='{$_fieldName}' name='{$_fieldName}' value='{$_fieldState}' />";
                 $input .= "<span data-control-media='{$_fieldName}' style='pointer-events: all;' class='mp-settings-media-button mp-settings-add-media-button'>Select Media</span>";
 
             }
@@ -348,7 +348,7 @@ if( ! class_exists( 'Page' ) )
 
             ?>
 
-            <h1 style="padding: 0.67em 0 0.67em 20px;margin: 0 0 18px -20px;background: #1d2327;color: #f0f0f1;"><?php echo $this->pageTitle; ?></h1>
+            <h1 id="mp-settings-header" style="padding: 0.67em 0 0.67em 20px;margin: 0 0 18px -20px;background: #1d2327;color: #f0f0f1;position: relative;"><?php echo $this->pageTitle; ?></h1>
 
             <!-- Admin Notice Forced Container Position -->
             <div class="wrap"><h2></h2></div>
@@ -394,6 +394,16 @@ if( ! class_exists( 'Page' ) )
                 ?>
 
                 <style>
+                    h1#mp-settings-header::after{
+                        content: '';
+                        background: #1d2327;
+                        position: absolute;
+                        top: -1000px;
+                        left: 0;
+                        height: 1000px;
+                        width: 100%;
+                        display: block;
+                    }
                     .mp-settings-label:hover span.mp-settings-label-inner,
                     .mp-settings-label:active span.mp-settings-label-inner,
                     .mp-settings-label:focus span.mp-settings-label-inner{

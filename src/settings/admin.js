@@ -46,7 +46,7 @@ jQuery(document).ready(function ($) {
                         }
                     });
                 };
-                wp.media.frames.gk_frame.on('close', gk_media_set_image);
+                //wp.media.frames.gk_frame.on('close', gk_media_set_image);
                 wp.media.frames.gk_frame.on('select', gk_media_set_image);
                 wp.media.frames.gk_frame.open();
             });

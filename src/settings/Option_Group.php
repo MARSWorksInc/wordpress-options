@@ -18,12 +18,15 @@ if( ! class_exists( 'Option_Group' ) )
          */
         private array $options;
 
+        private array $value;
+
         public function __construct(
             string $_key
         )
         {
 
             $this->key = $_key;
+            $this->value = \get_option( $this->key );
 
             add_action( 'admin_init', [ $this, 'register_option_group' ], 10, 0 );
 
@@ -45,6 +48,20 @@ if( ! class_exists( 'Option_Group' ) )
          */
         public function register_option_group()
         {
+
+            if(
+                is_array( $registeredSettings = \get_registered_settings() ) &&
+                array_key_exists( $this->key, $registeredSettings )
+            ){
+
+                $message = "The option group <strong><em>{$this->key}</em></strong> already exists. Please update your option group key to a unique value.";
+                add_action( 'admin_notices', function () use ($message){
+                    $output = $this->output_admin_notice($message);
+                    echo $output;
+                }, 10, 0 );
+                return;
+
+            }
 
             \register_setting(
                 $this->key,
@@ -72,6 +89,7 @@ if( ! class_exists( 'Option_Group' ) )
 
                     if(
                         ! is_null( $sanitizationCallback = $_optionObject->get_sanitization_callback() ) &&
+                        is_callable( $sanitizationCallback ) &&
                         array_key_exists( $_optionName, $_input )
                     ){
 
@@ -95,6 +113,34 @@ if( ! class_exists( 'Option_Group' ) )
             if( array_key_exists( $_optionName, $this->options ) ){
 
                 return $this->options[$_optionName];
+
+            }
+
+            return null;
+
+        }
+
+        public function get_option_value( $_optionName, $_returnRawValue = false )
+        {
+
+            if( ! isset( $this->options ) ){ return null; }
+
+            if(
+                array_key_exists( $_optionName, $this->options ) &&
+                array_key_exists( $_optionName, $this->value )
+            ){
+
+                if(
+                    ! $_returnRawValue &&
+                    ! is_null( $returnCallback = $this->options[$_optionName]->get_return_callback() ) &&
+                    is_callable( $returnCallback )
+                ){
+
+                    return call_user_func_array( $returnCallback, [$this->value[$_optionName]] );
+
+                }
+
+                return $this->value[$_optionName];
 
             }
 

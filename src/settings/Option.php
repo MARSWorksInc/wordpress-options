@@ -31,6 +31,11 @@ if( ! class_exists( 'Option' ) )
          */
         private $sanitizationCallback;
 
+        /**
+         * @var callable $returnCallback
+         */
+        private $returnCallback;
+
         public function __construct(
             string $_name,
             string $_label,
@@ -38,7 +43,8 @@ if( ! class_exists( 'Option' ) )
             ?string $_description = null,
             array $_options = [],
             $_defaultValue = null,
-            $_sanitizationCallback = null
+            $_sanitizationCallback = null,
+            $_returnCallback = null
         )
         {
 
@@ -49,6 +55,7 @@ if( ! class_exists( 'Option' ) )
             $this->options = $_options;
             $this->defaultValue = $_defaultValue;
             $this->sanitizationCallback = $_sanitizationCallback;
+            $this->returnCallback = $_returnCallback;
 
         }
 
@@ -98,6 +105,13 @@ if( ! class_exists( 'Option' ) )
         {
 
             return $this->sanitizationCallback;
+
+        }
+
+        public function get_return_callback(): ?callable
+        {
+
+            return $this->returnCallback;
 
         }
 

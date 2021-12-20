@@ -3,12 +3,12 @@
  * @package marspress/wp-options
  */
 
-namespace MarsPress\Options\Settings;
+namespace MarsPress\Options\ThemeMods;
 
-if( ! class_exists( 'Option' ) )
+if( ! class_exists( 'Customization' ) )
 {
 
-    final class Option
+    final class Customization
     {
 
         private string $name;
@@ -19,7 +19,11 @@ if( ! class_exists( 'Option' ) )
 
         private ?string $description;
 
+        private ?string $placeholder;
+
         private array $options;
+
+        private int $position;
 
         /**
          * @var mixed $defaultValue
@@ -41,7 +45,9 @@ if( ! class_exists( 'Option' ) )
             string $_label,
             string $_type,
             ?string $_description = null,
+            ?string $_placeholder = null,
             array $_options = [],
+            int $_position = 10,
             $_defaultValue = null,
             $_sanitizationCallback = null,
             $_returnCallback = null
@@ -52,7 +58,9 @@ if( ! class_exists( 'Option' ) )
             $this->label = $_label;
             $this->type = $_type;
             $this->description = $_description;
+            $this->placeholder = $_placeholder;
             $this->options = $_options;
+            $this->position = $_position;
             $this->defaultValue = $_defaultValue;
             $this->sanitizationCallback = $_sanitizationCallback;
             $this->returnCallback = $_returnCallback;
@@ -87,10 +95,24 @@ if( ! class_exists( 'Option' ) )
 
         }
 
+        public function get_placeholder(): ?string
+        {
+
+            return $this->placeholder;
+
+        }
+
         public function get_options(): array
         {
 
             return $this->options;
+
+        }
+
+        public function get_position(): int
+        {
+
+            return $this->position;
 
         }
 

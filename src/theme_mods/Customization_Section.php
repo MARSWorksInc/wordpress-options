@@ -40,7 +40,7 @@ if( ! class_exists( 'Customization_Section' ) )
             $this->position = $_position;
             $this->value = \get_theme_mod( $this->key );
 
-            add_action( 'customize_register', [ $this, 'register_customization_group' ], 10, 1 );
+            add_action( 'customize_register', [ $this, 'register_customization_group' ], 10 );
 
         }
 
@@ -48,11 +48,13 @@ if( ! class_exists( 'Customization_Section' ) )
          * @action customize_register
          * @class \MarsPress\Options\ThemeMods\Option_Group
          * @function register_customization_group
-         * @param \WP_Customize_Manager $_customizeManager
+         * @param \WP_Customize_Manager|false $_customizeManager
          * @priority 10
          * @return void
          */
-        public function register_customization_group( \WP_Customize_Manager $_customizeManager ){
+        public function register_customization_group( $_customizeManager ){
+
+            if( ! is_object( $_customizeManager ) ){ return; }
 
             if( ! isset( $this->customizations ) ){ return; }
 
@@ -70,8 +72,20 @@ if( ! class_exists( 'Customization_Section' ) )
 
             foreach ( $this->customizations as $_customizationName => $_customization ){
 
+                //TODO:: solve the issues with the checkbox-multiple labels and bindings...
+
+                if( $_customization->get_type() === 'checkbox-multiple' ){
+
+                    $key = "$this->key[$_customizationName][]";
+
+                }else{
+
+                    $key = "$this->key[$_customizationName]";
+
+                }
+
                 $_customizeManager->add_setting(
-                    "$this->key[$_customizationName]",
+                    "$key",
                     [
                         'type'                      => 'theme_mod',
                         'capability'                => 'edit_theme_options',
@@ -88,7 +102,7 @@ if( ! class_exists( 'Customization_Section' ) )
                     $_customizeManager->add_control(
                         new \MarsPress\Options\ThemeMods\Customization_Control_Multi_Select(
                             $_customizeManager,
-                            "$this->key[$_customizationName]",
+                            "$key",
                             [
                                 'type'                      => $_customization->get_type(),
                                 'priority'                  => $_customization->get_position(),
@@ -96,7 +110,53 @@ if( ! class_exists( 'Customization_Section' ) )
                                 'label'                     => $_customization->get_label(),
                                 'description'               => $_customization->get_description(),
                                 'input_attrs'               => [
-                                    'class'             => "$this->key[$_customizationName]",
+                                    'class'             => "$key",
+                                    'style'             => '',
+                                    'placeholder'       => $_customization->get_placeholder(),
+                                ],
+                                'active_callback'           => 'is_front_page',
+                                'choices'                   => $_customization->get_options(),
+                            ]
+                        )
+                    );
+
+                }elseif( $_customization->get_type() === 'checkbox-multiple' ) {
+
+                    $_customizeManager->add_control(
+                        new \MarsPress\Options\ThemeMods\Customization_Control_Multi_Checkbox(
+                            $_customizeManager,
+                            "$key",
+                            [
+                                'type'                      => $_customization->get_type(),
+                                'priority'                  => $_customization->get_position(),
+                                'section'                   => $this->key,
+                                'label'                     => $_customization->get_label(),
+                                'description'               => $_customization->get_description(),
+                                'input_attrs'               => [
+                                    'class'             => "$key",
+                                    'style'             => '',
+                                    'placeholder'       => $_customization->get_placeholder(),
+                                ],
+                                'active_callback'           => 'is_front_page',
+                                'choices'                   => $_customization->get_options(),
+                            ]
+                        )
+                    );
+
+                }else if( $_customization->get_type() === 'media' ) {
+
+                    $_customizeManager->add_control(
+                        new \WP_Customize_Media_Control(
+                            $_customizeManager,
+                            "$key",
+                            [
+                                'type'                      => $_customization->get_type(),
+                                'priority'                  => $_customization->get_position(),
+                                'section'                   => $this->key,
+                                'label'                     => $_customization->get_label(),
+                                'description'               => $_customization->get_description(),
+                                'input_attrs'               => [
+                                    'class'             => "$key",
                                     'style'             => '',
                                     'placeholder'       => $_customization->get_placeholder(),
                                 ],
@@ -109,7 +169,7 @@ if( ! class_exists( 'Customization_Section' ) )
                 }else{
 
                     $_customizeManager->add_control(
-                        "$this->key[$_customizationName]",
+                        "$key",
                         [
                             'type'                      => $_customization->get_type(),
                             'priority'                  => $_customization->get_position(),
@@ -117,7 +177,7 @@ if( ! class_exists( 'Customization_Section' ) )
                             'label'                     => $_customization->get_label(),
                             'description'               => $_customization->get_description(),
                             'input_attrs'               => [
-                                'class'             => "$this->key[$_customizationName]",
+                                'class'             => "$key",
                                 'style'             => '',
                                 'placeholder'       => $_customization->get_placeholder(),
                             ],

@@ -248,3 +248,8 @@ Although you could chain inside the `\MarsPress\Options\Settings\Page` construct
 
 ## WP Theme Mods
 Theme mods are generally in the Appearance Customizer.
+
+### Resources
+* https://developer.wordpress.org/themes/customize-api/customizer-objects/
+
+### Usage

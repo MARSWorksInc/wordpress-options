@@ -20,7 +20,7 @@ if( ! class_exists( 'Customization_Control_Multi_Select' ) )
             ?>
             <label>
                 <span class="customize-control-title"><?php echo esc_html( $this->label ); ?></span>
-                <select <?php $this->link(); ?> multiple="multiple" style="height: 100%;">
+                <select <?php $this->input_attrs(); ?> <?php $this->link(); ?> multiple="multiple">
                     <?php
                     foreach ( $this->choices as $value => $label ) {
 

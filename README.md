@@ -1,20 +1,26 @@
 # MarsPress Options
+
 ### Installation
+
 Require the composer package in your composer.json with `marspress/wp-options` with minimum `dev-main` OR run `composer require marspress/wp-options`
 
 ## WP Options
+
 Options are generally under the Settings menu in wp-admin.
 
 ### Resources
+
 * https://developer.wordpress.org/reference/functions/register_setting/
 
 ### Usage
+
 `new \MarsPress\Options\Settings\Option_Group()` takes 1 required parameter.
 * Key (required)(string)
     * Unique key for the Option Group.
     * If the option key is already in use, the Option Group will not be registered, and an admin notice will be displayed in wp-admin.
 
 #### Available Methods
+
 * `add_options` takes any number of parameters as long as they are of the type `\MarsPress\Options\Settings\Option`
   * Returns self: `$this`.
 * `get_option_value()` takes 2 parameters, 1 required and 1 optional.
@@ -89,12 +95,15 @@ Options are generally under the Settings menu in wp-admin.
   * Defaults to `80`.
 
 #### Examples
+
 First, you must create and Option Group:
+
 ```PHP
 $exampleOptionGroup = new \MarsPress\Options\Settings\Option_Group('example_settings');
 ```
 
 Then you can add Options to your Option Group (including examples of each field type):
+
 ```PHP
 $exampleOptionGroup->add_options(
     new \MarsPress\Options\Settings\Option(
@@ -211,6 +220,7 @@ $exampleOptionGroup->add_options(
 ```
 
 Then you can create a Page:
+
 ```PHP
 new \MarsPress\Options\Settings\Page(
   $exampleOptionGroup,
@@ -221,11 +231,13 @@ new \MarsPress\Options\Settings\Page(
 ```
 
 You can them access your option values:
+
 ```PHP
 echo $optionGroup->get_option_value('example_media');
 ```
 
 #### Method / Class Chaining
+
 Because the `add_options` method of the Option Group class returns itself, you are able to use class and method chaining as such:
 ```PHP
 $exampleOptionGroup = (new \MarsPress\Options\Settings\Option_Group('example_settings'))->add_options(
@@ -247,9 +259,225 @@ $exampleOptionGroup = (new \MarsPress\Options\Settings\Option_Group('example_set
 Although you could chain inside the `\MarsPress\Options\Settings\Page` constructor as well, it is recommended that you store your instance of your Option Group so you can access the option values easily.
 
 ## WP Theme Mods
+
 Theme mods are generally in the Appearance Customizer.
 
 ### Resources
+
 * https://developer.wordpress.org/themes/customize-api/customizer-objects/
 
 ### Usage
+
+`new \MarsPress\Options\ThemeMods\Customization_Section()` takes 4 parameters, 2 required and 2 optional.
+* Key (required)(string)
+  * Unique section key.
+  * If the section key already exists inside Customize Manager, an admin notice will be outputted in the Appearance Customizer.
+* Label (required)(string)
+  * Label to be displayed in the Customizer Panel.
+* Description (optional)(string)
+  * Description which displays in the Customizer Panel underneath the Label.
+  * Defaults to `null`
+* Position (optional)(string)
+  * The priority/position in the Customizer Panel.
+  * Defaults to `160` (near the bottom of the Panel)
+
+#### Available Methods
+
+* `add_customizations` takes any number of parameters as long as they are of the type `\MarsPress\Options\ThemeMods\Customization`
+  * Returns self: `$this`.
+* `get_customization_value()` takes 2 parameters, 1 required and 1 optional.
+  * Customization Name (required)(string)
+    * The theme mod name for which value to return.
+    * If the theme mod value does not exist in the database, the method will return `null`.
+    * If the Customization object has a Return Callback, the method will return the Return Callback's return value.
+  * Return Raw Value (optional)(bool)
+    * Whether to skip the Return Callback of the theme mod.
+    * Defaults to `false`.
+
+`new \MarsPress\Options\ThemeMods\Customization()` takes 10 parameters, 3 required and 7 optional.
+* Name (required)(string)
+  * The ID of the theme mod.
+  * This should be unique for the Section.
+  * If the Name already exists inside the Section, it will not be added and an admin notification will be displayed in wp-admin.
+* Label (required)(string)
+  * The label for the HTML input.
+* Type (required)(string)
+  * The type of input.
+  * Valid values are (some depending on browser support):
+    * `text`
+    * `hidden`
+    * `number`
+    * `range`
+    * `url`
+    * `tel`
+    * `email`
+    * `search`
+    * `time`
+    * `date`
+    * `datetime`
+    * `week`
+    * `checkbox`
+    * `checkbox-multiple`
+    * `select`
+    * `select-multiple`
+    * `radio`
+    * `textarea`
+    * `media`
+* Description (optional)(string)
+  * Description to display underneath the HTML input. 
+  * Defaults to `null`
+* Placeholder (optional)(string)
+  * The placeholder for the HTML input.
+  * This is subject to HTML supported placeholder elements.
+  * Defaults to `null`
+* Options (optional)(array)
+  * Array of `value => label` options.
+  * This is only used for `checkbox`, `checkbox-multiple`, `select`, `select-multiple`, and `radio` types.
+  * You should pass an empty array (`[]`) otherwise.
+  * Defaults to an empty array: `[]`
+* Position (optional)(int)
+  * The priority/position inside the Section.
+  * Defaults to `10`
+* Default Value (optional)(mixed)
+  * The default value for the input.
+  * This is a mixed type as it depends on the type of your theme mod. E.g. a `text` type could have a default value of `"This is the default value"` but types like `select-multiple` should have an array.
+  * Defaults to `null`
+* Sanitization Callback (optional)(callable)
+  * The sanitization callback to be executed before the value is saved into the database.
+  * This can be a Closure function, or `[ $this, '<public_method_name>' ]` for non-static classes or `[ __CLASS__, '<public_method_name>' ]` for static classes. 
+  * Your function should take 1 parameter, which is the value of the user input for the field. Thus, it is a mixed field.
+  * Defaults to `null`
+* Return Callback (optional)(callable)
+  * The return callback to be executed before the value is returned to you in PHP.
+  * This can be a Closure function, or `[ $this, '<public_method_name>' ]` for non-static classes or `[ __CLASS__, '<public_method_name>' ]` for static classes.
+  * Your function should take 1 parameter, which is the value of the user input for the field. Thus, it is a mixed field.
+  * Defaults to `null`
+
+### Examples
+
+First you need to make a Section:
+
+```PHP
+$exampleCustomizationSection = new \MarsPress\Options\ThemeMods\Customization_Section(
+    'example_section',
+    'Example Section',
+    'Example Section Description.',
+    1
+);
+```
+
+Then you can add theme mods to the Section (including examples of the most common field types):
+
+```PHP
+$exampleCustomizationSection->add_customizations(
+    new \MarsPress\Options\ThemeMods\Customization(
+      'example_text',
+      'Example Text Field',
+      'text',
+      'Example Field Description.',
+      'Example placeholder'
+    ),
+    new \MarsPress\Options\ThemeMods\Customization(
+        'example_select',
+        'Example Select Field',
+        'select',
+        'Example Field Description.',
+        null,
+        [
+            ''  => '-- Select --',
+            '1' => 'Value One',
+            '2' => 'Value Two',
+            '3' => 'Value Three',
+        ]
+    ),
+    new \MarsPress\Options\ThemeMods\Customization(
+        'example_multi_select',
+        'Example Select Multiple Field',
+        'select-multiple',
+        'Example Field Description.',
+        null,
+        [
+            ''  => '-- Select --',
+            '1' => 'Value One',
+            '2' => 'Value Two',
+            '3' => 'Value Three',
+        ]
+    ),
+    new \MarsPress\Options\ThemeMods\Customization(
+        'example_checkbox',
+        'Example Checkbox Field',
+        'checkbox',
+        'Example Field Description.',
+        null,
+    ),
+    new \MarsPress\Options\ThemeMods\Customization(
+        'example_multi_checkbox',
+        'Example Checkbox Multiple Field',
+        'checkbox-multiple',
+        'Example Field Description.',
+        null,
+        [
+            '1' => 'Value One',
+            '2' => 'Value Two',
+            '3' => 'Value Three',
+        ],
+        10,
+        null,
+        null,
+        function ( $_value ){
+            if( is_array( $_value ) ){
+                return implode( ',', $_value );
+            }
+            return $_value;
+        }
+    ),
+    new \MarsPress\Options\ThemeMods\Customization(
+        'example_radio',
+        'Example Radio Field',
+        'radio',
+        'Example Field Description.',
+        null,
+        [
+            ''  => '-- None --',
+            '1' => 'Value One',
+            '2' => 'Value Two',
+            '3' => 'Value Three',
+        ]
+    ),
+    new \MarsPress\Options\ThemeMods\Customization(
+        'example_text_area',
+        'Example Text Area Field',
+        'textarea',
+        'Example Field Description.',
+        'Example placeholder'
+    ),
+    new \MarsPress\Options\ThemeMods\Customization(
+        'example_media',
+        'Example Media Field',
+        'media',
+        'Example Field Description.',
+        null
+    ),
+);
+```
+
+#### Method / Class Chaining
+
+Because the `add_customizations` method of the Customization Section class returns itself, you are able to use class and method chaining as such:
+
+```PHP
+$exampleCustomizationSection = (new \MarsPress\Options\ThemeMods\Customization_Section(
+    'example_section',
+    'Example Section',
+    'Example Section Description.',
+    1
+)->add_customizations(
+    new \MarsPress\Options\ThemeMods\Customization(
+      'example_text',
+      'Example Text Field',
+      'text',
+      'Example Field Description.',
+      'Example placeholder'
+    ),
+));
+```

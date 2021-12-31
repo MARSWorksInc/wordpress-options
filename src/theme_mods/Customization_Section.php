@@ -19,6 +19,8 @@ if( ! class_exists( 'Customization_Section' ) )
 
         private int $position;
 
+        private bool $displayError = false;
+
         /**
          * @var Customization[] $customizations
          */
@@ -41,6 +43,44 @@ if( ! class_exists( 'Customization_Section' ) )
             $this->value = \get_theme_mod( $this->key );
 
             add_action( 'customize_register', [ $this, 'register_customization_group' ], 10 );
+            add_action( 'customize_controls_print_scripts', [ $this, 'load_editor_script' ], 10 );
+
+        }
+
+        /**
+         * @action customize_controls_print_scripts
+         * @class \MarsPress\Options\ThemeMods\Option_Group
+         * @function load_editor_script
+         * @priority 10
+         * @return void
+         */
+        public function load_editor_script()
+        {
+
+            if( $this->displayError ){
+
+                $message = "The customization section with the key <strong><em>{$this->key}</em></strong> already exists in the customization manager. Please update your customization section key to a unique value.";
+                echo <<<JS
+                <script>
+                    ( function( $ ) {
+                        'use strict';
+                        wp.customize.bind( 'ready', function (){
+                            wp.customize.notifications.add(
+                                'marspress-theme-mods-section-exists-{$this->key}',
+                                new wp.customize.Notification(
+                                    'marspress-theme-mods-section-exists-{$this->key}', {
+                                        dismissible: true,
+                                        message: "{$message}",
+                                        type: 'error'
+                                    }
+                                )
+                            );
+                        });
+                    } )( jQuery );
+                </script>
+                JS;
+
+            }
 
         }
 
@@ -58,6 +98,14 @@ if( ! class_exists( 'Customization_Section' ) )
 
             if( ! isset( $this->customizations ) ){ return; }
 
+            if( array_key_exists( $this->key, $_customizeManager->sections() ) ){
+
+                $this->displayError = true;
+
+                return;
+
+            }
+
             $_customizeManager->add_section(
                 $this->key,
                 [
@@ -72,15 +120,31 @@ if( ! class_exists( 'Customization_Section' ) )
 
             foreach ( $this->customizations as $_customizationName => $_customization ){
 
-                //TODO:: solve the issues with the checkbox-multiple labels and bindings...
+                $key = "$this->key[$_customizationName]";
+
+                $sanitizationCallback = $_customization->get_sanitization_callback();
 
                 if( $_customization->get_type() === 'checkbox-multiple' ){
 
-                    $key = "$this->key[$_customizationName][]";
+                    $sanitizationCallback = function( $_value ) use ($_customization){
 
-                }else{
+                        $values = $_value;
 
-                    $key = "$this->key[$_customizationName]";
+                        if( ! is_array( $values ) ){
+
+                            $values = explode( ',', $values );
+
+                        }
+
+                        if( ! is_null( $callback = $_customization->get_sanitization_callback() ) ){
+
+                            $values = call_user_func_array( $callback, [$values] );
+
+                        }
+
+                        return $values;
+
+                    };
 
                 }
 
@@ -92,7 +156,7 @@ if( ! class_exists( 'Customization_Section' ) )
                         'theme_supports'            => '',
                         'default'                   => $_customization->get_default_value(),
                         'transport'                 => 'refresh',
-                        'sanitize_callback'         => $_customization->get_sanitization_callback(),
+                        'sanitize_callback'         => $sanitizationCallback,
                         'sanitize_js_callback'      => '',
                     ]
                 );
@@ -110,8 +174,8 @@ if( ! class_exists( 'Customization_Section' ) )
                                 'label'                     => $_customization->get_label(),
                                 'description'               => $_customization->get_description(),
                                 'input_attrs'               => [
-                                    'class'             => "$key",
-                                    'style'             => '',
+                                    'class'             => "$key marspress-field marspress-multi-select",
+                                    'style'             => 'height: 100%;',
                                     'placeholder'       => $_customization->get_placeholder(),
                                 ],
                                 'active_callback'           => 'is_front_page',
@@ -133,7 +197,7 @@ if( ! class_exists( 'Customization_Section' ) )
                                 'label'                     => $_customization->get_label(),
                                 'description'               => $_customization->get_description(),
                                 'input_attrs'               => [
-                                    'class'             => "$key",
+                                    'class'             => "$key marspress-field marspress-multi-checkbox",
                                     'style'             => '',
                                     'placeholder'       => $_customization->get_placeholder(),
                                 ],
@@ -156,7 +220,7 @@ if( ! class_exists( 'Customization_Section' ) )
                                 'label'                     => $_customization->get_label(),
                                 'description'               => $_customization->get_description(),
                                 'input_attrs'               => [
-                                    'class'             => "$key",
+                                    'class'             => "$key marspress-field marspress-media",
                                     'style'             => '',
                                     'placeholder'       => $_customization->get_placeholder(),
                                 ],
@@ -177,7 +241,7 @@ if( ! class_exists( 'Customization_Section' ) )
                             'label'                     => $_customization->get_label(),
                             'description'               => $_customization->get_description(),
                             'input_attrs'               => [
-                                'class'             => "$key",
+                                'class'             => "$key marspress-field",
                                 'style'             => '',
                                 'placeholder'       => $_customization->get_placeholder(),
                             ],
